@@ -108,7 +108,7 @@ def private_to_addr(private_key): #4
     ripemd160_bpk.update(sha256_bpk_digest)
     ripemd160_bpk_digest = ripemd160_bpk.digest()
     ripemd160_bpk_hex = codecs.encode(ripemd160_bpk_digest, 'hex')
-    ripemd160_bpk_hex = b'00' + ripemd160_bpk_hex
+    ripemd160_bpk_hex = b'6f' + ripemd160_bpk_hex
     sha256_nbpk = hashlib.sha256(binascii.unhexlify(ripemd160_bpk_hex)).hexdigest()
     sha256_2_nbpk = hashlib.sha256(binascii.unhexlify(sha256_nbpk)).hexdigest()
     checksum = sha256_2_nbpk[:8]
