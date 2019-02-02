@@ -1,5 +1,5 @@
 # Alice -> Bob (5BTC) -> Charlie
-
+import codecs
 import struct
 import base58
 import binascii
@@ -40,18 +40,18 @@ def flip_byte_order(string):
 
 rtx = raw_tx()
 
-rtx.tx_in["txouthash"] = flip_byte_order(prv_txid)
+rtx.tx_in["txouthash"] = bytes.fromhex(flip_byte_order(prv_txid))
 rtx.tx_in["tx_out_index"] = struct.pack("<L", 0)
-rtx.tx_in["script"] = ("76a914%s88ac" % bob_hashed_pubkey)
+rtx.tx_in["script"] = bytes.fromhex("76a914%s88ac" % bob_hashed_pubkey)
 rtx.tx_in["scrip_bytes"] = struct.pack("<B", len(rtx.tx_in["script"]))
-rtx.tx_in["sequence"] = "ffffffff".hex()
-'''
+rtx.tx_in["sequence"] = bytes.fromhex("ffffffff")
+
 rtx.tx_out1["value"] = struct.pack("<Q", 100000)
-rtx.tx_out1["pk_script"] = ("76a914%s88ac" % charlie_hashed_pubkey).decode("hex")
+rtx.tx_out1["pk_script"] = bytes.fromhex("76a914%s88ac" % charlie_hashed_pubkey)
 rtx.tx_out1["pk_script_bytes"] = struct.pack("<B", len(rtx.tx_out1["pk_script"]))
 
 rtx.tx_out2["value"] = struct.pack("<Q", 50000)
-rtx.tx_out2["pk_script"] = ("76a914%s88ac" % bob_hashed_pubkey).decode("hex")
+rtx.tx_out2["pk_script"] = bytes.fromhex("76a914%s88ac" % bob_hashed_pubkey)
 rtx.tx_out2["pk_script_bytes"] = struct.pack("<B", len(rtx.tx_out2["pk_script"]))
 
 raw_tx_string = (
@@ -77,23 +77,26 @@ raw_tx_string = (
 
 hashed_tx_to_sign = hashlib.sha256(hashlib.sha256(raw_tx_string).digest()).digest()
 
-sk = ecdsa.SigningKey.from_string(Bob_private_key.decode("hex"), curve=ecdsa.SECP256k1)
+sk = ecdsa.SigningKey.from_string(codecs.decode(Bob_private_key, 'hex'), curve=ecdsa.SECP256k1)
 
 vk = sk.verifying_key
 
-public_key = ('\04' + vk.to_string()).encode("hex")
+vk.to_string()
+
+
+public_key = ('\04' + vk.to_string().hex())
 
 signature = sk.sign_digest(hashed_tx_to_sign, sigencode=ecdsa.util.sigencode_der_canonize)
 
 sigscript = (
 
         signature
-        + "\01"
-        + struct.pack("<B", len(public_key.decode("hex")))
-        + public_key.decode("hex")
+        # + b"\01"
+        + struct.pack("<B", len(public_key.hex()))
+        # + public_key
 
 )
-
+'''
 real_tx = (
         rtx.version
         + rtx.tx_in_count
